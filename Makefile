@@ -1,7 +1,7 @@
 NAME = philo
 HEADER = incs/philo.h
 CC = cc
-FLAGS = -Wall -Wextra -Werror
+FLAGS = -Wall -Wextra -Werror -fsanitize=thread
 RM = rm -rf
 
 SRCS = srcs/philo.c srcs/checkargs.c srcs/philo_utils.c srcs/init.c srcs/routine.c
