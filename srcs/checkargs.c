@@ -3,58 +3,48 @@
 /*                                                        :::      ::::::::   */
 /*   checkargs.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: omajdoub <omajdoub@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: unky0 <unky0@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/16 19:35:48 by omajdoub          #+#    #+#             */
-/*   Updated: 2023/07/16 19:35:49 by omajdoub         ###   ########.fr       */
+/*   Updated: 2025/06/01 16:41:54 by unky0            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../incs/philo.h"
 
-int	isvalid(char **argv)
+int ft_isdigit(int c)
 {
-	int	i;
-	int	ii;
+	return (c >= '0' && c <= '9');
+}
 
-	i = 0;
-	while (argv[++i])
+int ft_atoi(const char *str)
+{
+	int res = 0;
+	while (*str >= '0' && *str <= '9')
+		res = res * 10 + (*str++ - '0');
+	return (res);
+}
+
+int is_valid_args(int argc, char **argv)
+{
+	int i = 1, j;
+	if (argc != 5 && argc != 6)
+		return (0);
+	while (i < argc)
 	{
-		ii = 0;
-		while (argv[i][ii])
-		{
-			if (!ft_isdigit(argv[i][ii]))
-				return (1);
-			ii++;
-		}
+		j = 0;
+		while (argv[i][j])
+			if (!ft_isdigit(argv[i][j++]))
+				return (0);
 		if (ft_atoi(argv[i]) <= 0)
-			return (1);
+			return (0);
+		i++;
 	}
-	return (0);
+	return (1);
 }
 
-t_data	*initial_data(char **argv, int argc)
+void error_exit(char *msg)
 {
-	t_data	*data;
-
-	data = (t_data *)malloc(sizeof(t_data));
-	if (!data)
-	{
-		errorf();
-		return (NULL);
-	}
-	data->philo_num = ft_atoi(argv[1]);
-	data->time2die = ft_atoi(argv[2]);
-	data->time2eat = ft_atoi(argv[3]);
-	data->time2sleep = ft_atoi(argv[4]);
-	if (argc == 6)
-		data->max_eat_count = ft_atoi(argv[5]);
-	else
-		data->max_eat_count = -1;
-	return (data);
-}
-
-void	errorf(void)
-{
-	printf("Error\n");
+	write(2, msg, strlen(msg));
+	exit(1);
 }

@@ -1,25 +1,29 @@
+
 NAME = philo
-HEADER = incs/philo.h
+
 CC = cc
-FLAGS = -Wall -Wextra -Werror -fsanitize=thread
-RM = rm -rf
+CFLAGS = -Wall -Wextra -Werror 
+RM = rm -f
 
-SRCS = srcs/philo.c srcs/checkargs.c srcs/philo_utils.c srcs/init.c srcs/routine.c
-OBJS = ${SRCS:.c=.o}
+SRCDIR = srcs
+INCDIR = incs
+SRCS = $(wildcard $(SRCDIR)/*.c)
+OBJS = $(SRCS:.c=.o)
 
-all : ${NAME}
+all: $(NAME)
 
-$(NAME)	:	$(OBJS)
-			${CC} ${FLAGS} ${OBJS} -o $(NAME)
+$(NAME): $(OBJS)
+	$(CC) $(CFLAGS) $(OBJS) -o $(NAME)
 
-%.o	:	%.c	$(HEADER)
-		$(CC) ${FLAGS} -c $< -o $@
+%.o: %.c $(INCDIR)/philo.h
+	$(CC) $(CFLAGS) -I$(INCDIR) -c $< -o $@
 
-clean	:
-			$(RM) $(OBJS)
+clean:
+	$(RM) $(OBJS)
 
-fclean	:	clean
-			$(RM) $(NAME)
-re	:	fclean all
+fclean: clean
+	$(RM) $(NAME)
 
-.PHONY	:	all clean fclean re
+re: fclean all
+
+.PHONY: all clean fclean re

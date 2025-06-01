@@ -3,52 +3,66 @@
 /*                                                        :::      ::::::::   */
 /*   init.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: omajdoub <omajdoub@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: unky0 <unky0@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/16 19:35:51 by omajdoub          #+#    #+#             */
-/*   Updated: 2023/07/16 19:46:51 by omajdoub         ###   ########.fr       */
+/*   Updated: 2025/06/01 16:43:52 by unky0            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../incs/philo.h"
 
-void	init_mutexes(t_data *data)
+static int init_mutexes(t_data *data)
 {
-	int	i;
-
-	i = 0;
-	data->forks = malloc(sizeof(pthread_mutex_t *) * data->philo_num);
-	data->print_mutex = malloc(sizeof(pthread_mutex_t));
-	pthread_mutex_init(data->print_mutex, NULL);
-	while (i < data->philo_num)
-	{
-		data->forks[i] = malloc(sizeof(pthread_mutex_t));
-		pthread_mutex_init(data->forks[i], NULL);
-		i++;
-	}
+	int i;
+	if (pthread_mutex_init(&data->print, NULL))
+		return (0);
+	if (pthread_mutex_init(&data->data_lock, NULL))
+		return (0);
+	data->forks = malloc(sizeof(pthread_mutex_t) * data->philo_num);
+	if (!data->forks)
+		return (0);
+	for (i = 0; i < data->philo_num; i++)
+		if (pthread_mutex_init(&data->forks[i], NULL))
+			return (0);
+	return (1);
 }
 
-void	init_philos(t_data *data)
+t_data *init_data(int argc, char **argv)
 {
-	int	i;
-
-	i = 0;
-	data->start_time = get_timestamp();
-	data->philos = malloc(sizeof(t_philo *) * data->philo_num);
-	init_mutexes(data);
-	while (i < data->philo_num)
-	{
-		data->philos[i] = malloc(sizeof(t_philo));
-		data->philos[i]->phid = i + 1;
-		data->philos[i]->data = data;
-		data->philos[i]->left_fork = data->forks[i];
-		data->philos[i]->right_fork = data->forks[(i + 1) % data->philo_num];
-		data->philos[i]->last_ate = get_timestamp();
-		data->philos[i]->eat_count = 0;
-		pthread_create(&data->philos[i]->thread_id, NULL, philo_routine,
-			data->philos[i]);
-		pthread_detach(data->philos[i]->thread_id);
-		usleep(50);
-		i++;
-	}
+	t_data *data = malloc(sizeof(t_data));
+	if (!data)
+		return (NULL);
+	data->philo_num = ft_atoi(argv[1]);
+	data->time_to_die = ft_atoi(argv[2]);
+	data->time_to_eat = ft_atoi(argv[3]);
+	data->time_to_sleep = ft_atoi(argv[4]);
+	data->max_eat = (argc == 6) ? ft_atoi(argv[5]) : -1;
+	data->all_ate = 0;
+	data->stop = 0;
+	data->start_time = get_time();
+	if (!init_mutexes(data))
+		return (NULL);
+	return (data);
 }
+
+int init_philos(t_data *data)
+{
+	int i;
+
+data->philos = malloc(sizeof(t_philo) * data->philo_num);
+	if (!data->philos)
+		return (0);
+	for (i = 0; i < data->philo_num; i++)
+	{
+		data->philos[i].id = i + 1;
+		data->philos[i].eat_count = 0;
+		data->philos[i].last_ate = data->start_time;
+		data->philos[i].left_fork = &data->forks[i];
+		data->philos[i].right_fork = &data->forks[(i + 1) % data->philo_num];
+		data->philos[i].data = data;
+		pthread_create(&data->philos[i].thread_id, NULL, philo_routine, &data->philos[i]);
+	}
+	return (1);
+}
+
